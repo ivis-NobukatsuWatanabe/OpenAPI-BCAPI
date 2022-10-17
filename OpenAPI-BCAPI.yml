@@ -1,0 +1,306 @@
+openapi: 3.0.0 #swagger Editorが最新のversion3.1.0に対応していないので3.0.0で書く
+info:
+  title: ウォレット&買い物情報管理API
+  description: |-
+    ウォレットの利用状況(入出金)とウォレットの残高の情報、また買い物情報のDBへの登録、参照とブロックチェーンへのトークンとしての登録、参照を行うAPI
+  contact: 
+    email: nobukatsu.watanabe@ivis.co.jp
+  #license:
+  #  name: Tsukioka Dai
+  version: 1.0.0
+servers:
+  - url: http://192.168.132.128 #個人のIPアドレスで書いてください
+    description: 検証サーバ
+    variables: 
+      port:
+        default: '8545'
+        description: 利用ポート番号
+paths:
+  /wallet/token/create:
+    post:
+      tags:
+        - walletTokens
+      summary: ウォレットトークンの登録
+      description: userCodeにもとづく出金、入金情報などを登録する
+      operationId: createWalletToken #一応メソッド名をoperationIdとしてみる
+      requestBody:
+        description: userCodeと、wallet情報(used,deposit,year,month,day,addDateTime)のリストからなるjsonデータ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Wallet'
+        required: true
+      responses:
+        '201':
+          description: 新しいwalletTokenが登録されました# 正常にwalletTokenが登録された時のステータスコード
+        '400':
+          description: Validation exception#リクエストボディの項目の型が違う場合などのステータスコード
+        '401':
+          description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
+      security:
+        - Bearer: []
+  /wallet/tokens/yearmonth/{user_code}/{year}/{month}:
+    parameters:
+      - name: user_code
+        in: path
+        required: true
+        schema:
+            type: string
+      - name: year
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: month
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - walletTokens
+      summary: ウォレットトークンの検索参照
+      description: userCodeと入出金が行われた年月に該当するウォレットトークンを検索する
+      operationId: getWalletTokenByUserYearMonth
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletTokens' 
+        '401':
+          description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
+      security:
+        - Bearer: []
+  /balance/{user_code}:
+    parameters:
+      - name: user_code
+        in: path
+        required: true
+        schema:
+            type: string
+    get:
+      tags:
+        - Balance
+      summary: 残高を参照する
+      description: user_codeに対する残高を参照する
+      operationId: getBalanceByUser
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance' 
+        '401':
+          description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
+      security:
+        - Bearer: []
+  /shopping/token/create:
+    post:
+      tags:
+        - shoppingTokens
+      summary: ショッピングトークンの登録
+      description: userCodeにもとづくショッピング情報などを登録する
+      operationId: createShoppingToken #一応メソッド名をoperationIdとしてみる
+      requestBody:
+        description: userCodeと、shopping情報(goodsName,totalAmount,year,month,day,addDateTime)のリストからなるjsonデータ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shopping'
+        required: true
+      responses:
+        '201':
+          description: 新しいwalletTokenが登録されました# 正常にwalletTokenが登録された時のステータスコード
+        '400':
+          description: Validation exception#リクエストボディの項目の型が違う場合などのステータスコード
+        '401':
+          description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
+        '404':
+          description: 指定したuserCode、Year、Monthのウォレットトークンが存在しない、またはURLが間違っている
+      security:
+        - Bearer: []
+  /shopping/tokens/yearmonth/{user_code}/{year}/{month}:
+    parameters:
+      - name: user_code
+        in: path
+        required: true
+        schema:
+            type: string
+      - name: year
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: month
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - shoppingTokens
+      summary: ショッピングトークンの検索参照
+      description: userCodeと買い物が行われた年月に該当するショッピングトークンを検索する
+      operationId: getShoppingTokenByUserYearMonth
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingTokens' 
+        '401':
+          description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
+      security:
+        - Bearer: []
+components:
+  schemas:
+    Wallet:
+      type: object
+      properties:
+        used:
+          type: integer
+          format: int64
+          example: 3000
+        deposit:
+          type: integer
+          format: int64
+          example: 10000
+        year:
+          type: integer
+          format: int32
+          example: 2022
+        month:
+          type: integer
+          format: int32
+          example: 10
+        day:
+          type: integer
+          format: int32
+          example: 14
+        add_date_time:
+          type: string
+          format: date-time #もしかしたら違うかも
+          example: 2022-08-01T13:00:00+09:00
+      xml:
+        name: wallet
+    WalletTokens:
+      type: object
+      properties:
+        walletTokenId:
+          type: integer
+          format: int64
+          example: 1
+        user:
+          type: string
+          format: string
+          example: "userCode01"
+        used:
+          type: integer
+          format: int64
+          example: 3000
+        deposit:
+          type: integer
+          format: int64
+          example: 10000
+        year:
+          type: integer
+          format: int32
+          example: 2022
+        month:
+          type: integer
+          format: int32
+          example: 10
+        day:
+          type: integer
+          format: int32
+          example: 14
+        add_date_time:
+          type: string
+          format: date-time #もしかしたら違うかも
+          example: 2022-08-01T13:00:00+09:00
+      xml:
+        name: walletTokens
+    Balance:
+      type: object
+      properties:
+        balance:
+          type: integer
+          format: int64
+          example: 10000
+      xml:
+        name: balance
+    Shopping:
+      type: object
+      properties:
+        goodsName:
+          type: string
+          format: string
+          example: 本
+        totalAmount:
+          type: integer
+          format: int64
+          example: 5000
+        year:
+          type: integer
+          format: int32
+          example: 2022
+        month:
+          type: integer
+          format: int32
+          example: 10
+        day:
+          type: integer
+          format: int32
+          example: 14
+        addDateTime:
+          type: string
+          format: date-time #もしかしたら違うかも
+          example: 2022-08-01T13:00:00+09:00
+      xml:
+        name: wallet
+    ShoppingTokens:
+      type: object
+      properties:
+        shoppingTokenId:
+          type: integer
+          format: int64
+          example: 1
+        user:
+          type: string
+          format: string
+          example: "userCode01"
+        goodsName:
+          type: string
+          format: string
+          example: 本
+        deposit:
+          type: integer
+          format: int64
+          example: 5000
+        year:
+          type: integer
+          format: int32
+          example: 2022
+        month:
+          type: integer
+          format: int32
+          example: 10
+        day:
+          type: integer
+          format: int32
+          example: 14
+        addDateTime:
+          type: string
+          format: date-time #もしかしたら違うかも
+          example: 2022-08-01T13:00:00+09:00
+      xml:
+        name: shoppingTokens
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      description: Credentials or access token for API
