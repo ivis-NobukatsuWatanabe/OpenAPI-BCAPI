@@ -9,11 +9,11 @@ info:
   #  name: Tsukioka Dai
   version: 1.0.0
 servers:
-  - url: http://192.168.132.128 #個人のIPアドレスで書いてください
+  - url: http://172.18.32.184:8082 #個人のIPアドレスで書いてください
     description: 検証サーバ
     variables: 
       port:
-        default: '8545'
+        default: '8082'
         description: 利用ポート番号
 paths:
   /wallet-tokens:
@@ -161,6 +161,15 @@ components:
     Wallet:
       type: object
       properties:
+        user_code:
+          type: string
+          format: string
+          example: user01
+        walletList:
+          $ref: '#/components/schemas/WalletList'
+    WalletList:
+      type: object
+      properties:   
         used:
           type: integer
           format: int64
@@ -236,6 +245,15 @@ components:
     Shopping:
       type: object
       properties:
+        user_code:
+          type: string
+          format: string
+          example: user01
+        shoppingList:
+          $ref: '#/components/schemas/ShoppingList'
+    ShoppingList:
+      type: object
+      properties:
         goodsName:
           type: string
           format: string
@@ -261,7 +279,7 @@ components:
           format: date-time #もしかしたら違うかも
           example: 2022-08-01T13:00:00+09:00
       xml:
-        name: wallet
+        name: shopping
     ShoppingTokens:
       type: object
       properties:
