@@ -38,30 +38,29 @@ paths:
         '401':
           description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
       security:
-        - Bearer: []
-  /wallet-tokens/{userCode}/{year}/{month}:
-    parameters:
-      - name: userCode
-        in: path
-        required: true
-        schema:
-            type: string
-      - name: year
-        in: path
-        required: true
-        schema:
-          type: integer
-      - name: month
-        in: path
-        required: true
-        schema:
-          type: integer
+        - BearerAuth: []
     get:
       tags:
         - wallet-tokens
       summary: ウォレットトークンの検索参照
       description: userCodeと入出金が行われた年月に該当するウォレットトークンを検索する
       operationId: getWalletTokensByUserYearMonth
+      parameters:
+      - name: userCode
+        in: query
+        required: true
+        schema:
+            type: string
+      - name: year
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: month
+        in: query
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           description: Successful operation
@@ -72,7 +71,7 @@ paths:
         '401':
           description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
       security:
-        - Bearer: []
+        - BearerAuth: []
   /balance/{userCode}:
     parameters:
       - name: userCode
@@ -96,7 +95,7 @@ paths:
         '401':
           description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
       security:
-        - Bearer: []
+        - BearerAuth: []
   /shopping-tokens:
     post:
       tags:
@@ -121,30 +120,29 @@ paths:
         '404':
           description: 指定したuserCode、Year、Monthのウォレットトークンが存在しない、またはURLが間違っている
       security:
-        - Bearer: []
-  /shopping-tokens/{userCode}/{year}/{month}:
-    parameters:
-      - name: userCode
-        in: path
-        required: true
-        schema:
-            type: string
-      - name: year
-        in: path
-        required: true
-        schema:
-          type: integer
-      - name: month
-        in: path
-        required: true
-        schema:
-          type: integer
+        - BearerAuth: []
     get:
       tags:
         - shopping-tokens
       summary: ショッピングトークンの検索参照
       description: userCodeと買い物が行われた年月に該当するショッピングトークンを検索する
       operationId: getShoppingTokensByUserYearMonth
+      parameters:
+      - name: userCode
+        in: query
+        required: true
+        schema:
+            type: string
+      - name: year
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: month
+        in: query
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           description: Successful operation
@@ -155,45 +153,48 @@ paths:
         '401':
           description: 適切な認証情報を持っていない#BearerTokenの認証に失敗した場合のステータスコード
       security:
-        - Bearer: []
+        - BearerAuth: []
 components:
   schemas:
     Wallet:
       type: object
       properties:
-        user_code:
+        userCode:
           type: string
           format: string
           example: user01
         walletList:
           $ref: '#/components/schemas/WalletList'
     WalletList:
-      type: object
-      properties:   
-        used:
-          type: integer
-          format: int64
-          example: 3000
-        deposit:
-          type: integer
-          format: int64
-          example: 10000
-        year:
-          type: integer
-          format: int32
-          example: 2022
-        month:
-          type: integer
-          format: int32
-          example: 10
-        day:
-          type: integer
-          format: int32
-          example: 14
-        addDateTime:
-          type: string
-          format: date-time #もしかしたら違うかも
-          example: 2022-08-01T13:00:00+09:00
+      type: array
+      items:  
+        type: object 
+        description: ウォレット情報の配列
+        properties:
+          used:
+            type: integer
+            format: int64
+            example: 3000
+          deposit:
+            type: integer
+            format: int64
+            example: 10000
+          year:
+            type: integer
+            format: int32
+            example: 2022
+          month:
+            type: integer
+            format: int32
+            example: 10
+          day:
+            type: integer
+            format: int32
+            example: 14
+          addDateTime:
+            type: string
+            format: date-time #もしかしたら違うかも
+            example: 2022-08-01T13:00:00+09:00
       xml:
         name: wallet
     WalletTokens:
@@ -252,32 +253,35 @@ components:
         shoppingList:
           $ref: '#/components/schemas/ShoppingList'
     ShoppingList:
-      type: object
-      properties:
-        goodsName:
-          type: string
-          format: string
-          example: 本
-        totalAmount:
-          type: integer
-          format: int64
-          example: 5000
-        year:
-          type: integer
-          format: int32
-          example: 2022
-        month:
-          type: integer
-          format: int32
-          example: 10
-        day:
-          type: integer
-          format: int32
-          example: 14
-        addDateTime:
-          type: string
-          format: date-time #もしかしたら違うかも
-          example: 2022-08-01T13:00:00+09:00
+      type: array
+      items:  
+        type: object 
+        description: ショッピング情報の配列
+        properties:
+          goodsName:
+            type: string
+            format: string
+            example: 本
+          totalAmount:
+            type: integer
+            format: int64
+            example: 5000
+          year:
+            type: integer
+            format: int32
+            example: 2022
+          month:
+            type: integer
+            format: int32
+            example: 10
+          day:
+            type: integer
+            format: int32
+            example: 14
+          addDateTime:
+            type: string
+            format: date-time #もしかしたら違うかも
+            example: 2022-08-01T13:00:00+09:00
       xml:
         name: shopping
     ShoppingTokens:
@@ -318,7 +322,8 @@ components:
       xml:
         name: shoppingTokens
   securitySchemes:
-    Bearer:
+    BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
       description: Credentials or access token for API
